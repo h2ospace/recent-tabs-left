@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recent Tabs Left の設定</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Recent Tabs Left</h1>
+      <p class="lead">タブを見続けた時間で、左端へ移動します。</p>
+      <form id="settings">
+        <label for="dwell-seconds">左へずらすまでの秒数</label>
+        <div class="control">
+          <input
+            id="dwell-seconds"
+            type="number"
+            min="0"
+            max="300"
+            step="1"
+            inputmode="numeric"
+            autocomplete="off"
+            required
+            value="3"
+          />
+          <span>秒</span>
+        </div>
+        <p id="preview"></p>
+        <button type="submit">保存する</button>
+        <p id="status" role="status"></p>
+      </form>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

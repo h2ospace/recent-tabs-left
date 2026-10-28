@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Recent Tabs Left",
-  "version": "1.2.0",
-  "description": "タブを設定した秒数見ると、一番左（固定タブの右）へ移動します。",
-  "permissions": ["tabs", "storage", "alarms"],
+  "version": "1.3.0",
+  "description": "タブを設定した秒数見ると左へ移動します。同じURLは開いているタブを使います。",
+  "permissions": ["tabs", "storage", "alarms", "webNavigation"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

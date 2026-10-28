@@ -1,4 +1,12 @@
-import { DEFAULT_DWELL_SECONDS, DEFAULT_ENABLED, normalizeDwellSeconds, normalizeEnabled } from "./settings.js";
+import { createReuseController } from "./reuse-tab.js";
+import {
+  DEFAULT_DWELL_SECONDS,
+  DEFAULT_ENABLED,
+  DEFAULT_FOCUS_EXISTING,
+  normalizeDwellSeconds,
+  normalizeEnabled,
+  normalizeFocusExisting,
+} from "./settings.js";
 
 const KEEPALIVE_SLICE_MS = 20_000;
 const inFlight = new Set();
@@ -12,6 +20,28 @@ chrome.tabs.onActivated.addListener((info) => {
 
 chrome.runtime.onInstalled.addListener(() => armActiveTabs());
 chrome.runtime.onStartup.addListener(() => armActiveTabs());
+
+const reuseTabs = createReuseController({
+  queryTabs: () => chrome.tabs.query({}),
+  focusWindow: (windowId) => chrome.windows.update(windowId, { focused: true }),
+  focusTab: (tabId) => chrome.tabs.update(tabId, { active: true }),
+  closeTab: (tabId) => chrome.tabs.remove(tabId),
+  goBack: (tabId) => chrome.tabs.goBack(tabId),
+  isEnabled: async () => {
+    const stored = await chrome.storage.sync.get({ focusExisting: DEFAULT_FOCUS_EXISTING });
+    return normalizeFocusExisting(stored.focusExisting);
+  },
+});
+
+chrome.tabs.onCreated.addListener((tab) => {
+  reuseTabs.onCreated(tab);
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  reuseTabs.onRemoved(tabId);
+});
+
+chrome.webNavigation.onCommitted.addListener((details) => reuseTabs.onCommitted(details));
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (!alarm.name.startsWith("dwell:")) return;

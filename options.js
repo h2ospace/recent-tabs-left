@@ -1,15 +1,20 @@
 import {
   DEFAULT_DWELL_SECONDS,
   DEFAULT_ENABLED,
+  DEFAULT_FOCUS_EXISTING,
   MAX_DWELL_SECONDS,
   normalizeDwellSeconds,
   normalizeEnabled,
+  normalizeFocusExisting,
 } from "./settings.js";
 
 const form = document.querySelector("#settings");
 const input = document.querySelector("#dwell-seconds");
 const enabledInput = document.querySelector("#enabled");
-const enabledState = document.querySelector(".switch-state");
+const enabledState = document.querySelector("#enabled-state");
+const focusInput = document.querySelector("#focus-existing");
+const focusState = document.querySelector("#focus-existing-state");
+const focusHint = document.querySelector("#focus-hint");
 const seconds = document.querySelector("#seconds");
 const preview = document.querySelector("#preview");
 const status = document.querySelector("#status");
@@ -46,6 +51,14 @@ function renderEnabled() {
   renderPreview();
 }
 
+function renderFocusExisting() {
+  const enabled = focusInput.checked;
+  focusState.textContent = enabled ? "オン" : "オフ";
+  focusHint.textContent = enabled
+    ? "アドレスバーやブックマークで開いたURLが既にあれば、そのタブに移ります。"
+    : "オフのあいだは、同じURLでも別のタブで開きます。";
+}
+
 function applySeconds(value) {
   input.value = String(normalizeDwellSeconds(value));
   renderPreview();
@@ -56,14 +69,19 @@ async function load() {
     const stored = await chrome.storage.sync.get({
       dwellSeconds: DEFAULT_DWELL_SECONDS,
       enabled: DEFAULT_ENABLED,
+      focusExisting: DEFAULT_FOCUS_EXISTING,
     });
     enabledInput.checked = normalizeEnabled(stored.enabled);
+    focusInput.checked = normalizeFocusExisting(stored.focusExisting);
     applySeconds(stored.dwellSeconds);
     renderEnabled();
+    renderFocusExisting();
   } catch {
     enabledInput.checked = DEFAULT_ENABLED;
+    focusInput.checked = DEFAULT_FOCUS_EXISTING;
     applySeconds(DEFAULT_DWELL_SECONDS);
     renderEnabled();
+    renderFocusExisting();
   }
 }
 
@@ -86,6 +104,22 @@ enabledInput.addEventListener("change", async () => {
   }
 });
 
+focusInput.addEventListener("change", async () => {
+  const focusExisting = focusInput.checked;
+  renderFocusExisting();
+  status.textContent = "";
+  try {
+    await chrome.storage.sync.set({ focusExisting });
+    status.textContent = focusExisting
+      ? "同じURLは、開いているタブに移ります。"
+      : "同じURLでも、別のタブで開きます。";
+  } catch {
+    focusInput.checked = !focusExisting;
+    renderFocusExisting();
+    status.textContent = "保存できませんでした。";
+  }
+});
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   status.textContent = "";
@@ -93,11 +127,13 @@ form.addEventListener("submit", async (event) => {
 
   const dwellSeconds = normalizeDwellSeconds(input.value);
   const enabled = enabledInput.checked;
+  const focusExisting = focusInput.checked;
   submitButton.disabled = true;
   try {
-    await chrome.storage.sync.set({ dwellSeconds, enabled });
+    await chrome.storage.sync.set({ dwellSeconds, enabled, focusExisting });
     applySeconds(dwellSeconds);
     renderEnabled();
+    renderFocusExisting();
     status.textContent = "保存しました。";
   } catch {
     status.textContent = "保存できませんでした。";
@@ -107,4 +143,5 @@ form.addEventListener("submit", async (event) => {
 });
 
 renderEnabled();
+renderFocusExisting();
 load();

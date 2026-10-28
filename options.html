@@ -16,7 +16,7 @@
           <label class="switch">
             <input id="enabled" type="checkbox" role="switch" checked aria-labelledby="enabled-heading" />
             <span class="switch-track" aria-hidden="true"></span>
-            <span class="switch-state" aria-hidden="true">オン</span>
+            <span id="enabled-state" class="switch-state" aria-hidden="true">オン</span>
           </label>
         </div>
         <div id="seconds">
@@ -37,6 +37,21 @@
           </div>
         </div>
         <p id="preview"></p>
+        <div class="switch-row switch-row-spaced">
+          <span id="focus-existing-heading">同じURL</span>
+          <label class="switch">
+            <input
+              id="focus-existing"
+              type="checkbox"
+              role="switch"
+              checked
+              aria-labelledby="focus-existing-heading"
+            />
+            <span class="switch-track" aria-hidden="true"></span>
+            <span id="focus-existing-state" class="switch-state" aria-hidden="true">オン</span>
+          </label>
+        </div>
+        <p id="focus-hint" class="hint"></p>
         <button type="submit">保存する</button>
         <p id="status" role="status"></p>
       </form>

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Recent Tabs Left",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "タブを設定した秒数見ると、一番左（固定タブの右）へ移動します。",
   "permissions": ["tabs", "storage", "alarms"],
   "background": {

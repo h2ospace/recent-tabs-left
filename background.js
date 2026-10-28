@@ -1,4 +1,4 @@
-import { DEFAULT_DWELL_SECONDS, normalizeDwellSeconds } from "./settings.js";
+import { DEFAULT_DWELL_SECONDS, DEFAULT_ENABLED, normalizeDwellSeconds, normalizeEnabled } from "./settings.js";
 
 const KEEPALIVE_SLICE_MS = 20_000;
 const inFlight = new Set();
@@ -19,6 +19,23 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   if (!Number.isInteger(windowId)) return;
   return resumeWindow(windowId);
 });
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "sync" || !Object.prototype.hasOwnProperty.call(changes, "enabled")) return;
+  if (normalizeEnabled(changes.enabled.newValue)) return enqueueMode(() => armActiveTabs());
+  return enqueueMode(() => disableAll());
+});
+
+let modeChain = Promise.resolve();
+
+function enqueueMode(task) {
+  const run = modeChain.then(task, task);
+  modeChain = run.then(
+    () => {},
+    () => {},
+  );
+  return run;
+}
 
 function beginWatch(windowId) {
   const token = (watchTokens.get(windowId) ?? 0) + 1;
@@ -51,11 +68,15 @@ function commit(windowId, task) {
   return run;
 }
 
-async function getDwellSeconds() {
+async function getSettings() {
   const stored = await chrome.storage.sync.get({
     dwellSeconds: DEFAULT_DWELL_SECONDS,
+    enabled: DEFAULT_ENABLED,
   });
-  return normalizeDwellSeconds(stored.dwellSeconds);
+  return {
+    dwellSeconds: normalizeDwellSeconds(stored.dwellSeconds),
+    enabled: normalizeEnabled(stored.enabled),
+  };
 }
 
 async function readPending() {
@@ -102,7 +123,9 @@ async function watchTab(tabId, windowId, remainingMs) {
     }
     if (!isCurrentWatch(windowId, token)) return;
 
-    if (!tab || tab.pinned) {
+    const settings = await getSettings();
+    if (!isCurrentWatch(windowId, token)) return;
+    if (!tab || tab.pinned || !settings.enabled) {
       await commit(windowId, async () => {
         if (!isCurrentWatch(windowId, token)) return;
         await clearPending(windowId);
@@ -112,8 +135,7 @@ async function watchTab(tabId, windowId, remainingMs) {
 
     let waitMs = remainingMs;
     if (waitMs == null) {
-      waitMs = (await getDwellSeconds()) * 1000;
-      if (!isCurrentWatch(windowId, token)) return;
+      waitMs = settings.dwellSeconds * 1000;
     }
     waitMs = Math.max(0, waitMs);
     const dueAt = Date.now() + waitMs;
@@ -191,13 +213,36 @@ async function moveLeft(tabId, windowId, token, retry = 0) {
 
 async function resumeWindow(windowId) {
   if (inFlight.has(windowId)) return;
+  if (!(await getSettings()).enabled) {
+    await clearPending(windowId);
+    return;
+  }
   const pending = (await readPending())[String(windowId)];
   if (!pending || pending.tabId == null || !Number.isFinite(pending.dueAt)) return;
   const remaining = Math.max(0, pending.dueAt - Date.now());
   return watchTab(pending.tabId, windowId, remaining);
 }
 
+async function disableAll() {
+  const pendingMoves = await readPending();
+  const windowIds = new Set([
+    ...watchTokens.keys(),
+    ...Object.keys(pendingMoves).map((windowId) => Number(windowId)),
+  ]);
+  const alarms = await chrome.alarms.getAll();
+  for (const alarm of alarms) {
+    if (!alarm.name.startsWith("dwell:")) continue;
+    const windowId = Number(alarm.name.slice("dwell:".length));
+    if (Number.isInteger(windowId)) windowIds.add(windowId);
+  }
+
+  for (const windowId of windowIds) beginWatch(windowId);
+  inFlight.clear();
+  await Promise.all([...windowIds].map((windowId) => commit(windowId, () => clearPending(windowId))));
+}
+
 async function armActiveTabs() {
+  if (!(await getSettings()).enabled) return;
   const pendingMoves = await readPending();
   const tabs = await chrome.tabs.query({ active: true });
   await Promise.all(

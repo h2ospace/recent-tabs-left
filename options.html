@@ -11,20 +11,30 @@
       <h1>Recent Tabs Left</h1>
       <p class="lead">タブを見続けた時間で、左端へ移動します。</p>
       <form id="settings">
-        <label for="dwell-seconds">左へずらすまでの秒数</label>
-        <div class="control">
-          <input
-            id="dwell-seconds"
-            type="number"
-            min="0"
-            max="300"
-            step="1"
-            inputmode="numeric"
-            autocomplete="off"
-            required
-            value="3"
-          />
-          <span>秒</span>
+        <div class="switch-row">
+          <span id="enabled-heading">動作</span>
+          <label class="switch">
+            <input id="enabled" type="checkbox" role="switch" checked aria-labelledby="enabled-heading" />
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="switch-state" aria-hidden="true">オン</span>
+          </label>
+        </div>
+        <div id="seconds">
+          <label for="dwell-seconds">左へずらすまでの秒数</label>
+          <div class="control">
+            <input
+              id="dwell-seconds"
+              type="number"
+              min="0"
+              max="300"
+              step="1"
+              inputmode="numeric"
+              autocomplete="off"
+              required
+              value="3"
+            />
+            <span>秒</span>
+          </div>
         </div>
         <p id="preview"></p>
         <button type="submit">保存する</button>

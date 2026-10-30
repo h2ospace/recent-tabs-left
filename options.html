@@ -4,57 +4,101 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Recent Tabs Left の設定</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <main>
-      <h1>Recent Tabs Left</h1>
-      <p class="lead">タブを見続けた時間で、左端へ移動します。</p>
-      <form id="settings">
-        <div class="switch-row">
-          <span id="enabled-heading">動作</span>
-          <label class="switch">
-            <input id="enabled" type="checkbox" role="switch" checked aria-labelledby="enabled-heading" />
-            <span class="switch-track" aria-hidden="true"></span>
-            <span id="enabled-state" class="switch-state" aria-hidden="true">オン</span>
+      <header class="header">
+        <div class="intro">
+          <h1>Recent Tabs Left</h1>
+          <p class="lead">タブの移動ルールを設定します。変更は自動で保存されます。</p>
+        </div>
+        <div class="enable">
+          <div class="enable-copy">
+            <span id="enabled-heading" class="enable-kicker">拡張機能</span>
+            <span id="enabled-state" class="enable-state">有効</span>
+          </div>
+          <label class="switch switch-lg">
+            <input
+              id="enabled"
+              type="checkbox"
+              role="switch"
+              checked
+              aria-labelledby="enabled-heading enabled-state"
+            />
+            <span class="track" aria-hidden="true"></span>
           </label>
         </div>
-        <div id="seconds">
-          <label for="dwell-seconds">左へずらすまでの秒数</label>
-          <div class="control">
-            <input
-              id="dwell-seconds"
-              type="number"
-              min="0"
-              max="300"
-              step="1"
-              inputmode="numeric"
-              autocomplete="off"
-              required
-              value="3"
-            />
-            <span>秒</span>
+      </header>
+      <hr class="divider" />
+      <form id="settings" class="settings">
+        <h2>動作設定</h2>
+        <div id="dwell" class="card">
+          <div class="card-copy">
+            <h3>左端へ自動で移動</h3>
+            <p>同じタブを一定時間開き続けると、固定タブのすぐ右へ移動します。</p>
+          </div>
+          <div class="dwell">
+            <label for="dwell-seconds">待機時間</label>
+            <div class="seconds-field">
+              <input
+                id="dwell-seconds"
+                type="number"
+                min="0"
+                max="300"
+                step="1"
+                inputmode="numeric"
+                autocomplete="off"
+                required
+                value="3"
+              />
+              <span class="unit">秒</span>
+            </div>
+            <div class="stepper">
+              <button type="button" id="dwell-up" aria-label="待機時間を1秒増やす">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3.5 10.5 8 6l4.5 4.5" />
+                </svg>
+              </button>
+              <button type="button" id="dwell-down" aria-label="待機時間を1秒減らす">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3.5 5.5 8 10l4.5-4.5" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-        <p id="preview"></p>
-        <div class="switch-row switch-row-spaced">
-          <span id="focus-existing-heading">同じURL</span>
-          <label class="switch">
+        <div class="card">
+          <div class="card-copy">
+            <h3 id="focus-heading" class="card-title">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 17H7A5 5 0 0 1 7 7h2" />
+                <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
+                <path d="M8 12h8" />
+              </svg>
+              同じURLのタブへ移動
+            </h3>
+            <p id="focus-hint">既に開いているURLの場合は、新しいタブを作らずそのタブを表示します。</p>
+          </div>
+          <label class="switch switch-sm">
             <input
               id="focus-existing"
               type="checkbox"
               role="switch"
               checked
-              aria-labelledby="focus-existing-heading"
+              aria-labelledby="focus-heading"
             />
-            <span class="switch-track" aria-hidden="true"></span>
-            <span id="focus-existing-state" class="switch-state" aria-hidden="true">オン</span>
+            <span class="track" aria-hidden="true"></span>
           </label>
         </div>
-        <p id="focus-hint" class="hint"></p>
-        <button type="submit">保存する</button>
-        <p id="status" role="status"></p>
       </form>
+      <p id="status" role="status"></p>
     </main>
     <script type="module" src="options.js"></script>
   </body>

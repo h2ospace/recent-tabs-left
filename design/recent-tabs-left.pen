@@ -1,0 +1,399 @@
+{
+  "version": "2.21",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Recent Tabs Left — 設定",
+      "clip": true,
+      "width": 640,
+      "height": 360,
+      "fill": "$bg",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "frame",
+          "id": "lwOyO",
+          "name": "タイトルと有効スイッチ",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "pg6zw",
+              "name": "画面説明",
+              "layout": "vertical",
+              "gap": 3,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "d6SwZq",
+                  "name": "拡張機能名",
+                  "fill": "$ink",
+                  "content": "Recent Tabs Left",
+                  "fontFamily": "$font",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "yalrf",
+                  "name": "画面説明文",
+                  "fill": "$muted",
+                  "content": "タブの移動ルールを設定します。変更は自動で保存されます。",
+                  "fontFamily": "$font",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RhmlX",
+              "name": "拡張機能の有効設定",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "k8qyNb",
+                  "name": "有効状態テキスト",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NC8Wi",
+                      "name": "有効ラベル",
+                      "fill": "$muted",
+                      "content": "拡張機能",
+                      "fontFamily": "$font",
+                      "fontSize": 9,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "H4EJdP",
+                      "name": "有効状態",
+                      "fill": "$accent-dark",
+                      "content": "有効",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AWAJz",
+                  "name": "有効トグル オン",
+                  "width": 44,
+                  "height": 24,
+                  "fill": "$accent",
+                  "cornerRadius": 12,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "NRfyc",
+                      "x": 23,
+                      "y": 3,
+                      "name": "有効トグルノブ",
+                      "fill": "#FFFFFF",
+                      "width": 18,
+                      "height": 18,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#00000022",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "s4FUG",
+          "name": "上部区切り線",
+          "fill": "$border",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "l9iWL",
+          "name": "設定項目",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "YffGN",
+              "name": "設定見出し",
+              "fill": "$muted",
+              "content": "動作設定",
+              "fontFamily": "$font",
+              "fontSize": 10,
+              "fontWeight": "700",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "BVYYO",
+              "name": "タブ移動設定",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 11,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": 14,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hCtkd",
+                  "name": "タブ移動説明",
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eroeR",
+                      "name": "タブ移動タイトル",
+                      "fill": "$ink",
+                      "content": "左端へ自動で移動",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rvBR5",
+                      "name": "タブ移動補足",
+                      "fill": "$muted",
+                      "content": "同じタブを一定時間開き続けると、固定タブのすぐ右へ移動します。",
+                      "fontFamily": "$font",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mGpOs",
+                  "name": "タブ移動コントロール",
+                  "gap": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "nsSp3",
+                      "name": "待機時間",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "F7DKqd",
+                          "name": "待機時間ラベル",
+                          "fill": "$muted",
+                          "content": "待機時間",
+                          "fontFamily": "$font",
+                          "fontSize": 9,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qcRMB",
+                          "name": "秒数入力",
+                          "width": 62,
+                          "height": 30,
+                          "fill": "#F8FAF9",
+                          "cornerRadius": 7,
+                          "stroke": "#C8D5D0",
+                          "strokeWidth": 1,
+                          "padding": [
+                            0,
+                            9
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uQCxG",
+                              "name": "秒数",
+                              "fill": "$ink",
+                              "content": "5",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "m2mub",
+                              "name": "秒単位",
+                              "fill": "$muted",
+                              "content": "秒",
+                              "fontFamily": "$font",
+                              "fontSize": 9,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "OnmnJ",
+              "name": "同じURL設定",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 11,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": 14,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "j8dUG",
+                  "name": "同じURL説明",
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zdYaJ",
+                      "name": "同じURL見出し",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "PsZKo",
+                          "name": "リンクアイコン",
+                          "width": 13,
+                          "height": 13,
+                          "icon": "link-2",
+                          "library": "lucide",
+                          "fill": "$accent"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mdrU5",
+                          "name": "同じURLタイトル",
+                          "fill": "$ink",
+                          "content": "同じURLのタブへ移動",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Q3pKO",
+                      "name": "同じURL補足",
+                      "fill": "$muted",
+                      "content": "既に開いているURLの場合は、新しいタブを作らずそのタブを表示します。",
+                      "fontFamily": "$font",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Z8Lgun",
+                  "name": "同じURLトグル オン",
+                  "width": 40,
+                  "height": 22,
+                  "fill": "$accent",
+                  "cornerRadius": 11,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "Wwwzo",
+                      "x": 21,
+                      "y": 3,
+                      "name": "同じURLトグルノブ",
+                      "fill": "#FFFFFF",
+                      "width": 16,
+                      "height": 16
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "bg": {
+      "type": "color",
+      "value": "#F4F7F6"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "surface-muted": {
+      "type": "color",
+      "value": "#E9F0ED"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#17211E"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#66736E"
+    },
+    "border": {
+      "type": "color",
+      "value": "#DCE5E1"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#24745F"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#195744"
+    },
+    "accent-soft": {
+      "type": "color",
+      "value": "#DCEDE7"
+    },
+    "font": {
+      "type": "string",
+      "value": "Noto Sans JP"
+    }
+  },
+  "fileToken": "7a979c9d-655b-4c7b-88ab-d53dbceef24d"
+}

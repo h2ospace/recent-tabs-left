@@ -13,25 +13,16 @@ const input = document.querySelector("#dwell-seconds");
 const enabledInput = document.querySelector("#enabled");
 const enabledState = document.querySelector("#enabled-state");
 const focusInput = document.querySelector("#focus-existing");
-const focusState = document.querySelector("#focus-existing-state");
 const focusHint = document.querySelector("#focus-hint");
-const seconds = document.querySelector("#seconds");
-const preview = document.querySelector("#preview");
+const dwell = document.querySelector("#dwell");
+const dwellUp = document.querySelector("#dwell-up");
+const dwellDown = document.querySelector("#dwell-down");
 const status = document.querySelector("#status");
-const submitButton = form.querySelector("button[type='submit']");
+
+const FOCUS_ON = "既に開いているURLの場合は、新しいタブを作らずそのタブを表示します。";
+const FOCUS_OFF = "オフのあいだは、同じURLでも別のタブで開きます。";
 
 input.max = String(MAX_DWELL_SECONDS);
-
-function describeDwell(value) {
-  if (!enabledInput.checked) return "オフのあいだは、タブを移動しません。";
-  if (value == null) {
-    return `0から${MAX_DWELL_SECONDS}の整数を入力してください。`;
-  }
-  if (value === 0) {
-    return "切り替えた瞬間に、固定タブのすぐ右へ移動します。";
-  }
-  return `${value}秒見続けると、固定タブのすぐ右へ移動します。`;
-}
 
 function readInput() {
   if (input.value.trim() === "") return null;
@@ -40,28 +31,59 @@ function readInput() {
   return value;
 }
 
-function renderPreview() {
-  preview.textContent = describeDwell(readInput());
-}
-
 function renderEnabled() {
   const enabled = enabledInput.checked;
-  enabledState.textContent = enabled ? "オン" : "オフ";
-  seconds.classList.toggle("is-off", !enabled);
-  renderPreview();
+  enabledState.textContent = enabled ? "有効" : "無効";
+  enabledState.classList.toggle("is-off", !enabled);
+  dwell.classList.toggle("is-off", !enabled);
 }
 
 function renderFocusExisting() {
-  const enabled = focusInput.checked;
-  focusState.textContent = enabled ? "オン" : "オフ";
-  focusHint.textContent = enabled
-    ? "アドレスバーやブックマークで開いたURLが既にあれば、そのタブに移ります。"
-    : "オフのあいだは、同じURLでも別のタブで開きます。";
+  focusHint.textContent = focusInput.checked ? FOCUS_ON : FOCUS_OFF;
 }
 
-function applySeconds(value) {
-  input.value = String(normalizeDwellSeconds(value));
-  renderPreview();
+function invalidMessage() {
+  return `0から${MAX_DWELL_SECONDS}の整数を入力してください。`;
+}
+
+let savedDwell = null;
+let dwellCommitTimer = 0;
+
+function showStatus(message, isError) {
+  status.textContent = message;
+  status.classList.toggle("is-error", isError);
+}
+
+function renderStepper() {
+  const value = readInput();
+  dwellUp.disabled = value != null && value >= MAX_DWELL_SECONDS;
+  dwellDown.disabled = value != null && value <= 0;
+}
+
+async function commitDwell() {
+  const value = readInput();
+  if (value == null) {
+    showStatus(invalidMessage(), true);
+    renderStepper();
+    return;
+  }
+  input.value = String(value);
+  renderStepper();
+  if (value === savedDwell) return;
+  try {
+    await chrome.storage.sync.set({ dwellSeconds: value });
+    savedDwell = value;
+    showStatus("保存しました", false);
+  } catch {
+    showStatus("保存できませんでした。", true);
+  }
+}
+
+function stepDwell(delta) {
+  const current = readInput() ?? 0;
+  const next = Math.min(MAX_DWELL_SECONDS, Math.max(0, current + delta));
+  input.value = String(next);
+  commitDwell();
 }
 
 async function load() {
@@ -73,72 +95,72 @@ async function load() {
     });
     enabledInput.checked = normalizeEnabled(stored.enabled);
     focusInput.checked = normalizeFocusExisting(stored.focusExisting);
-    applySeconds(stored.dwellSeconds);
-    renderEnabled();
-    renderFocusExisting();
+    savedDwell = normalizeDwellSeconds(stored.dwellSeconds);
+    input.value = String(savedDwell);
   } catch {
     enabledInput.checked = DEFAULT_ENABLED;
     focusInput.checked = DEFAULT_FOCUS_EXISTING;
-    applySeconds(DEFAULT_DWELL_SECONDS);
-    renderEnabled();
-    renderFocusExisting();
+    savedDwell = DEFAULT_DWELL_SECONDS;
+    input.value = String(DEFAULT_DWELL_SECONDS);
   }
+  renderEnabled();
+  renderFocusExisting();
+  renderStepper();
 }
 
 input.addEventListener("input", () => {
-  status.textContent = "";
-  renderPreview();
+  showStatus("", false);
+  renderStepper();
+});
+
+input.addEventListener("blur", () => {
+  window.clearTimeout(dwellCommitTimer);
+  dwellCommitTimer = window.setTimeout(() => {
+    commitDwell();
+  }, 0);
+});
+
+function commitStep(delta) {
+  window.clearTimeout(dwellCommitTimer);
+  stepDwell(delta);
+}
+
+dwellUp.addEventListener("click", () => {
+  commitStep(1);
+});
+
+dwellDown.addEventListener("click", () => {
+  commitStep(-1);
+});
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  commitDwell();
 });
 
 enabledInput.addEventListener("change", async () => {
   const enabled = enabledInput.checked;
   renderEnabled();
-  status.textContent = "";
   try {
     await chrome.storage.sync.set({ enabled });
-    status.textContent = enabled ? "オンにしました。" : "オフにしました。";
+    showStatus("保存しました", false);
   } catch {
     enabledInput.checked = !enabled;
     renderEnabled();
-    status.textContent = "保存できませんでした。";
+    showStatus("保存できませんでした。", true);
   }
 });
 
 focusInput.addEventListener("change", async () => {
   const focusExisting = focusInput.checked;
   renderFocusExisting();
-  status.textContent = "";
   try {
     await chrome.storage.sync.set({ focusExisting });
-    status.textContent = focusExisting
-      ? "同じURLは、開いているタブに移ります。"
-      : "同じURLでも、別のタブで開きます。";
+    showStatus("保存しました", false);
   } catch {
     focusInput.checked = !focusExisting;
     renderFocusExisting();
-    status.textContent = "保存できませんでした。";
-  }
-});
-
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  status.textContent = "";
-  if (!form.reportValidity()) return;
-
-  const dwellSeconds = normalizeDwellSeconds(input.value);
-  const enabled = enabledInput.checked;
-  const focusExisting = focusInput.checked;
-  submitButton.disabled = true;
-  try {
-    await chrome.storage.sync.set({ dwellSeconds, enabled, focusExisting });
-    applySeconds(dwellSeconds);
-    renderEnabled();
-    renderFocusExisting();
-    status.textContent = "保存しました。";
-  } catch {
-    status.textContent = "保存できませんでした。";
-  } finally {
-    submitButton.disabled = false;
+    showStatus("保存できませんでした。", true);
   }
 });
 

@@ -160,7 +160,8 @@ h2 {
   background: var(--surface);
 }
 
-#dwell.is-off {
+#dwell.is-off,
+#max-tabs.is-off {
   opacity: 0.45;
 }
 

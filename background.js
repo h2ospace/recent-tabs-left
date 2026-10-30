@@ -1,11 +1,14 @@
 import { createReuseController } from "./reuse-tab.js";
+import { pickTabsToClose } from "./tab-limit.js";
 import {
   DEFAULT_DWELL_SECONDS,
   DEFAULT_ENABLED,
   DEFAULT_FOCUS_EXISTING,
+  DEFAULT_MAX_TABS,
   normalizeDwellSeconds,
   normalizeEnabled,
   normalizeFocusExisting,
+  normalizeMaxTabs,
 } from "./settings.js";
 
 const KEEPALIVE_SLICE_MS = 20_000;
@@ -35,6 +38,7 @@ const reuseTabs = createReuseController({
 
 chrome.tabs.onCreated.addListener((tab) => {
   reuseTabs.onCreated(tab);
+  scheduleTabLimit(tab);
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -102,11 +106,65 @@ async function getSettings() {
   const stored = await chrome.storage.sync.get({
     dwellSeconds: DEFAULT_DWELL_SECONDS,
     enabled: DEFAULT_ENABLED,
+    maxTabs: DEFAULT_MAX_TABS,
   });
   return {
     dwellSeconds: normalizeDwellSeconds(stored.dwellSeconds),
     enabled: normalizeEnabled(stored.enabled),
+    maxTabs: normalizeMaxTabs(stored.maxTabs),
   };
+}
+
+const pendingLimits = new Map();
+const limitChains = new Map();
+const TAB_LIMIT_WAIT_MS = 400;
+
+function enqueueLimit(windowId, task) {
+  const previous = limitChains.get(windowId) ?? Promise.resolve();
+  const run = previous.then(task, task);
+  limitChains.set(
+    windowId,
+    run.then(
+      () => {},
+      () => {},
+    ),
+  );
+  return run;
+}
+
+function scheduleTabLimit(tab) {
+  if (tab.id == null || tab.windowId == null) return;
+  let pending = pendingLimits.get(tab.windowId);
+  if (!pending) {
+    pending = { keepIds: new Set(), timer: 0 };
+    pendingLimits.set(tab.windowId, pending);
+  }
+  pending.keepIds.add(tab.id);
+  clearTimeout(pending.timer);
+  const windowId = tab.windowId;
+  pending.timer = setTimeout(() => {
+    const keepIds = new Set(pending.keepIds);
+    pendingLimits.delete(windowId);
+    return enqueueLimit(windowId, () => enforceTabLimit(windowId, keepIds));
+  }, TAB_LIMIT_WAIT_MS);
+}
+
+async function enforceTabLimit(windowId, keepIds) {
+  const settings = await getSettings();
+  if (!settings.enabled) return;
+  let tabs;
+  try {
+    tabs = await chrome.tabs.query({ windowId });
+  } catch {
+    return;
+  }
+  const closing = pickTabsToClose(tabs, { maxTabs: settings.maxTabs, keepIds });
+  if (closing.length === 0) return;
+  try {
+    await chrome.tabs.remove(closing);
+  } catch {
+    // 閉じる直前にタブが無くなっている場合は、そのままでよい
+  }
 }
 
 async function readPending() {

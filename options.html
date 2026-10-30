@@ -74,6 +74,41 @@
             </div>
           </div>
         </div>
+        <div id="max-tabs" class="card">
+          <div class="card-copy">
+            <h3>最大タブ数</h3>
+            <p>この件数を超えて開くと、同じウィンドウで一番右のタブを閉じます。</p>
+          </div>
+          <div class="dwell">
+            <label for="max-tabs-count">件数</label>
+            <div class="seconds-field">
+              <input
+                id="max-tabs-count"
+                type="number"
+                min="1"
+                max="100"
+                step="1"
+                inputmode="numeric"
+                autocomplete="off"
+                required
+                value="20"
+              />
+              <span class="unit">件</span>
+            </div>
+            <div class="stepper">
+              <button type="button" id="max-tabs-up" aria-label="最大タブ数を1件増やす">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3.5 10.5 8 6l4.5 4.5" />
+                </svg>
+              </button>
+              <button type="button" id="max-tabs-down" aria-label="最大タブ数を1件減らす">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3.5 5.5 8 10l4.5-4.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="card">
           <div class="card-copy">
             <h3 id="focus-heading" class="card-title">

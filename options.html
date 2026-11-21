@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Recent Tabs Left の設定</title>
+    <title>Tabs Stay Left の設定</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,7 +16,7 @@
     <main>
       <header class="header">
         <div class="intro">
-          <h1>Recent Tabs Left</h1>
+          <h1>Tabs Stay Left</h1>
           <p class="lead">タブの移動ルールを設定します。変更は自動で保存されます。</p>
         </div>
         <div class="enable">
@@ -42,7 +42,7 @@
         <div id="dwell" class="card">
           <div class="card-copy">
             <h3>左端へ自動で移動</h3>
-            <p>同じタブを一定時間開き続けると、固定タブのすぐ右へ移動します。</p>
+            <p>新しいタブは左端で開きます。同じタブを一定時間開き続けると、固定タブのすぐ右へ移動します。</p>
           </div>
           <div class="dwell">
             <label for="dwell-seconds">待機時間</label>
@@ -109,7 +109,7 @@
             </div>
           </div>
         </div>
-        <div class="card">
+        <div id="focus" class="card">
           <div class="card-copy">
             <h3 id="focus-heading" class="card-title">
               <svg viewBox="0 0 24 24" aria-hidden="true">

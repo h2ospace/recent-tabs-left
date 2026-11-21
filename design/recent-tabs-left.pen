@@ -6,7 +6,7 @@
       "id": "bi8Au",
       "x": 0,
       "y": 0,
-      "name": "Recent Tabs Left — 設定",
+      "name": "Tabs Stay Left — 設定",
       "clip": true,
       "width": 640,
       "height": 360,
@@ -35,7 +35,7 @@
                   "id": "d6SwZq",
                   "name": "拡張機能名",
                   "fill": "$ink",
-                  "content": "Recent Tabs Left",
+                  "content": "Tabs Stay Left",
                   "fontFamily": "$font",
                   "fontSize": 18,
                   "fontWeight": "700"

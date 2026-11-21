@@ -16,6 +16,7 @@ const form = document.querySelector("#settings");
 const input = document.querySelector("#dwell-seconds");
 const enabledInput = document.querySelector("#enabled");
 const enabledState = document.querySelector("#enabled-state");
+const focusCard = document.querySelector("#focus");
 const focusInput = document.querySelector("#focus-existing");
 const focusHint = document.querySelector("#focus-hint");
 const dwell = document.querySelector("#dwell");
@@ -49,12 +50,18 @@ function readMaxTabs() {
   return readInteger(maxInput, MIN_MAX_TABS, MAX_MAX_TABS);
 }
 
+let savedFocusExisting = DEFAULT_FOCUS_EXISTING;
+
 function renderEnabled() {
   const enabled = enabledInput.checked;
   enabledState.textContent = enabled ? "有効" : "無効";
   enabledState.classList.toggle("is-off", !enabled);
   dwell.classList.toggle("is-off", !enabled);
   maxTabsCard.classList.toggle("is-off", !enabled);
+  focusCard.classList.toggle("is-off", !enabled);
+  focusInput.disabled = !enabled;
+  focusInput.checked = enabled && savedFocusExisting;
+  renderFocusExisting();
 }
 
 function renderFocusExisting() {
@@ -151,14 +158,14 @@ async function load() {
       maxTabs: DEFAULT_MAX_TABS,
     });
     enabledInput.checked = normalizeEnabled(stored.enabled);
-    focusInput.checked = normalizeFocusExisting(stored.focusExisting);
+    savedFocusExisting = normalizeFocusExisting(stored.focusExisting);
     savedDwell = normalizeDwellSeconds(stored.dwellSeconds);
     input.value = String(savedDwell);
     savedMaxTabs = normalizeMaxTabs(stored.maxTabs);
     maxInput.value = String(savedMaxTabs);
   } catch {
     enabledInput.checked = DEFAULT_ENABLED;
-    focusInput.checked = DEFAULT_FOCUS_EXISTING;
+    savedFocusExisting = DEFAULT_FOCUS_EXISTING;
     savedDwell = DEFAULT_DWELL_SECONDS;
     input.value = String(DEFAULT_DWELL_SECONDS);
     savedMaxTabs = DEFAULT_MAX_TABS;
@@ -248,16 +255,33 @@ enabledInput.addEventListener("change", async () => {
 });
 
 focusInput.addEventListener("change", async () => {
+  if (!enabledInput.checked) return;
   const focusExisting = focusInput.checked;
+  savedFocusExisting = focusExisting;
   renderFocusExisting();
   try {
     await chrome.storage.sync.set({ focusExisting });
     showStatus("保存しました", false);
   } catch {
-    focusInput.checked = !focusExisting;
-    renderFocusExisting();
+    savedFocusExisting = !focusExisting;
+    renderEnabled();
     showStatus("保存できませんでした。", true);
   }
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "sync") return;
+  let refresh = false;
+  if (Object.prototype.hasOwnProperty.call(changes, "enabled")) {
+    enabledInput.checked = normalizeEnabled(changes.enabled.newValue);
+    refresh = true;
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, "focusExisting")) {
+    savedFocusExisting = normalizeFocusExisting(changes.focusExisting.newValue);
+    refresh = true;
+  }
+  if (!refresh) return;
+  renderEnabled();
 });
 
 renderEnabled();

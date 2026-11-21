@@ -161,7 +161,8 @@ h2 {
 }
 
 #dwell.is-off,
-#max-tabs.is-off {
+#max-tabs.is-off,
+#focus.is-off {
   opacity: 0.45;
 }
 

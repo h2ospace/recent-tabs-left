@@ -16,13 +16,37 @@ const inFlight = new Set();
 const watchTokens = new Map();
 const commitChains = new Map();
 
-// アクティブのまま設定秒数が過ぎたタブを、固定タブのすぐ右へ移動する
+// 機能がオンのとき、新しいタブは固定タブのすぐ右で開く。
+// アクティブのまま設定秒数が過ぎたタブも、同じ位置へ移動する。
+const RESTORE_GRACE_MS = 5000;
+let suppressNewTabPlacementUntil = 0;
+
 chrome.tabs.onActivated.addListener((info) => {
   return watchTab(info.tabId, info.windowId);
 });
 
-chrome.runtime.onInstalled.addListener(() => armActiveTabs());
-chrome.runtime.onStartup.addListener(() => armActiveTabs());
+chrome.runtime.onInstalled.addListener(() => {
+  void syncActionIconFromStorage();
+  return armActiveTabs();
+});
+chrome.runtime.onStartup.addListener(() => {
+  // 起動時のタブ復元では onCreated が続く。並びを作り直さない
+  suppressNewTabPlacementUntil = Date.now() + RESTORE_GRACE_MS;
+  void syncActionIconFromStorage();
+  return armActiveTabs();
+});
+void syncActionIconFromStorage();
+
+let toggleChain = Promise.resolve();
+
+chrome.action.onClicked.addListener(() => {
+  const run = toggleChain.then(toggleEnabled, toggleEnabled);
+  toggleChain = run.then(
+    () => {},
+    () => {},
+  );
+  return run;
+});
 
 const reuseTabs = createReuseController({
   queryTabs: () => chrome.tabs.query({}),
@@ -31,6 +55,8 @@ const reuseTabs = createReuseController({
   closeTab: (tabId) => chrome.tabs.remove(tabId),
   goBack: (tabId) => chrome.tabs.goBack(tabId),
   isEnabled: async () => {
+    const { enabled } = await getSettings();
+    if (!enabled) return false;
     const stored = await chrome.storage.sync.get({ focusExisting: DEFAULT_FOCUS_EXISTING });
     return normalizeFocusExisting(stored.focusExisting);
   },
@@ -38,6 +64,7 @@ const reuseTabs = createReuseController({
 
 chrome.tabs.onCreated.addListener((tab) => {
   reuseTabs.onCreated(tab);
+  placeNewTabLeft(tab);
   scheduleTabLimit(tab);
 });
 
@@ -56,7 +83,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync" || !Object.prototype.hasOwnProperty.call(changes, "enabled")) return;
-  if (normalizeEnabled(changes.enabled.newValue)) return enqueueMode(() => armActiveTabs());
+  const enabled = normalizeEnabled(changes.enabled.newValue);
+  void syncActionIcon(enabled);
+  if (enabled) return enqueueMode(() => armActiveTabs());
   return enqueueMode(() => disableAll());
 });
 
@@ -100,6 +129,48 @@ function commit(windowId, task) {
     ),
   );
   return run;
+}
+
+const ACTION_ICON = {
+  on: {
+    16: "icons/icon-16.png",
+    32: "icons/icon-32.png",
+    48: "icons/icon-48.png",
+  },
+  off: {
+    16: "icons/icon-off-16.png",
+    32: "icons/icon-off-32.png",
+    48: "icons/icon-off-48.png",
+  },
+};
+
+function syncActionIcon(enabled) {
+  const on = normalizeEnabled(enabled);
+  return Promise.all([
+    chrome.action.setIcon({ path: on ? ACTION_ICON.on : ACTION_ICON.off }),
+    chrome.action.setTitle({
+      title: on
+        ? "Tabs Stay Left: オン（クリックでオフ）"
+        : "Tabs Stay Left: オフ（クリックでオン）",
+    }),
+  ]);
+}
+
+function syncActionIconFromStorage() {
+  return getSettings().then((settings) => syncActionIcon(settings.enabled));
+}
+
+async function toggleEnabled() {
+  const { enabled } = await getSettings();
+  const next = !enabled;
+  // 待機中のタブ監視が終わるまで待たない。アイコンは保存より先に切り替える
+  await syncActionIcon(next);
+  try {
+    await chrome.storage.sync.set({ enabled: next });
+  } catch (error) {
+    await syncActionIcon(enabled);
+    throw error;
+  }
 }
 
 async function getSettings() {
@@ -281,22 +352,55 @@ async function finishWatch(tabId, windowId, token) {
   });
 }
 
-async function moveLeft(tabId, windowId, token, retry = 0) {
-  if (!isCurrentWatch(windowId, token)) return;
+const NEW_TAB_SETTLE_MS = 100;
+const RESTORED_TAB_AGE_MS = 10_000;
 
+function placeNewTabLeft(tab) {
+  if (tab.id == null || tab.windowId == null || tab.pinned || tab.discarded) return undefined;
+  // 復元タブは lastAccessed が過去のまま届く。並びを動かさない
+  if (typeof tab.lastAccessed === "number" && tab.lastAccessed > 0 && Date.now() - tab.lastAccessed > RESTORED_TAB_AGE_MS) {
+    return undefined;
+  }
+  const tabId = tab.id;
+  const windowId = tab.windowId;
+  return commit(windowId, async () => {
+    const placed = await moveNewTabToLeftEdge(tabId, windowId);
+    if (!placed) return;
+    // 作成直後に隣へ置き直されることがあるので、落ち着いてからもう一度左へ寄せる
+    await sleep(NEW_TAB_SETTLE_MS);
+    await moveNewTabToLeftEdge(tabId, windowId);
+  });
+}
+
+async function moveNewTabToLeftEdge(tabId, windowId) {
+  if (Date.now() < suppressNewTabPlacementUntil) return false;
+  if (!(await getSettings()).enabled) return false;
+  await moveTabToLeftEdge(tabId, windowId);
+  return true;
+}
+
+async function moveTabToLeftEdge(tabId, windowId) {
   try {
     const tab = await chrome.tabs.get(tabId);
-    if (tab.pinned) return;
+    if (tab.pinned || tab.windowId !== windowId) return "done";
     const pinned = await chrome.tabs.query({ windowId, pinned: true });
-    if (tab.index === pinned.length) return;
+    if (tab.index === pinned.length) return "done";
     await chrome.tabs.move(tabId, { index: pinned.length });
+    return "done";
   } catch (error) {
     const message = String(error && error.message ? error.message : error);
-    if (/No tab with id/i.test(message)) return;
-    if (retry >= 10 || !isCurrentWatch(windowId, token)) return;
-    await sleep(150);
-    return moveLeft(tabId, windowId, token, retry + 1);
+    if (/No tab with id/i.test(message)) return "gone";
+    return "retry";
   }
+}
+
+async function moveLeft(tabId, windowId, token, retry = 0) {
+  if (!isCurrentWatch(windowId, token)) return;
+  const result = await moveTabToLeftEdge(tabId, windowId);
+  if (result !== "retry") return;
+  if (retry >= 10 || !isCurrentWatch(windowId, token)) return;
+  await sleep(150);
+  return moveLeft(tabId, windowId, token, retry + 1);
 }
 
 async function resumeWindow(windowId) {
@@ -333,14 +437,13 @@ async function armActiveTabs() {
   if (!(await getSettings()).enabled) return;
   const pendingMoves = await readPending();
   const tabs = await chrome.tabs.query({ active: true });
-  await Promise.all(
-    tabs.map((tab) => {
-      if (tab.id == null) return undefined;
-      const pending = pendingMoves[String(tab.windowId)];
-      if (pending && pending.tabId === tab.id && Number.isFinite(pending.dueAt)) {
-        return watchTab(tab.id, tab.windowId, Math.max(0, pending.dueAt - Date.now()));
-      }
-      return watchTab(tab.id, tab.windowId);
-    }),
-  );
+  for (const tab of tabs) {
+    if (tab.id == null) continue;
+    const pending = pendingMoves[String(tab.windowId)];
+    if (pending && pending.tabId === tab.id && Number.isFinite(pending.dueAt)) {
+      void watchTab(tab.id, tab.windowId, Math.max(0, pending.dueAt - Date.now()));
+      continue;
+    }
+    void watchTab(tab.id, tab.windowId);
+  }
 }

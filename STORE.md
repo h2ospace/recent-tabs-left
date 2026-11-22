@@ -4,15 +4,26 @@
 
 ## GitHub の description
 
-見ているタブを左へ寄せ、同じ URL は既存のタブで開き、上限を超えたら右端を閉じる Chrome 拡張機能。
+アクティブなタブを、左端に移動して整理します。その他、同じURLのタブを開かないようにしたり、使っていないタブを自動で閉じることができます。
+Moves the active tab to the left. You can also avoid reopening the same URL and automatically close unused tabs.
 
 ## ストアの短い説明
 
-132 文字以内。現在 63 文字。
+132 文字以内のため、言語ごとにどちらか一方を入れます。パッケージの `_locales` と同じ文です。
 
-オンのとき新しいタブは左端で開きます。見続けたタブも左へ移動し、同じ URL は既存タブを使います。上限超過で右端を閉じます。
+日本語（70 文字）
+
+アクティブなタブを、左端に移動して整理します。その他、同じURLのタブを開かないようにしたり、使っていないタブを自動で閉じることができます。
+
+English（112 文字）
+
+Moves the active tab to the left. You can also avoid reopening the same URL and automatically close unused tabs.
 
 ## ストアの詳しい説明
+
+アクティブなタブを、左端に移動して整理します。その他、同じURLのタブを開かないようにしたり、使っていないタブを自動で閉じることができます。
+
+Moves the active tab to the left. You can also avoid reopening the same URL and automatically close unused tabs.
 
 Tabs Stay Left は、今見ているタブをウィンドウの左へまとめる Chrome 拡張機能です。
 
@@ -25,6 +36,18 @@ Tabs Stay Left は、今見ているタブをウィンドウの左へまとめ�
 ツールバーのアイコンをクリックすると、オンとオフが切り替わります。オフのときはアイコンがグレーになり、タブの移動も、同じ URL のタブを開く動作も止まります。待機時間と最大タブ数は、拡張機能のオプションから変更します。初期状態はオン、待機時間 3 秒、最大タブ数 20 件です。
 
 設定はお使いの Chrome に保存されます。閲覧したページの URL を開発者が受け取ることはありません。
+
+Tabs Stay Left is a Chrome extension that keeps the tab you are viewing on the left side of the window.
+
+While it is on, a newly opened tab appears at the far left, immediately to the right of pinned tabs. A tab you keep viewing for the number of seconds you set also moves there. Set the time to 0 to move it as soon as you switch to it.
+
+If you open a URL from the address bar or a bookmark and that URL is already open in a tab, the extension switches to that tab instead of creating a new one. You can turn this off in the settings.
+
+When the number of tabs in a window exceeds the maximum, the newly opened tab stays and the rightmost tab is closed. Pinned tabs are not closed. The default maximum is 20.
+
+Click the toolbar icon to turn the extension on or off. While it is off, the icon is gray, and both moving tabs and reusing the same URL stop. Change the wait time and the maximum number of tabs in the extension options. The defaults are on, a wait of 3 seconds, and a maximum of 20 tabs.
+
+Settings are saved in your Chrome. The developer does not receive the URLs of pages you visit.
 
 ## 単一の目的
 

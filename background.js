@@ -4,10 +4,12 @@ import {
   DEFAULT_DWELL_SECONDS,
   DEFAULT_ENABLED,
   DEFAULT_FOCUS_EXISTING,
+  DEFAULT_LEFT_INDEX,
   DEFAULT_MAX_TABS,
   normalizeDwellSeconds,
   normalizeEnabled,
   normalizeFocusExisting,
+  normalizeLeftIndex,
   normalizeMaxTabs,
 } from "./settings.js";
 
@@ -16,8 +18,11 @@ const inFlight = new Set();
 const watchTokens = new Map();
 const commitChains = new Map();
 
-// 機能がオンのとき、新しいタブは固定タブのすぐ右で開く。
+// 機能がオンのとき、新しいタブは固定タブの右、指定した番目で開く。
+// 1番目は固定タブのすぐ右。2番目は、その右のタブを1つ残してさらに右。
 // アクティブのまま設定秒数が過ぎたタブも、同じ位置へ移動する。
+// ただし指定番目より左にいるタブは、右へは動かさない。
+// 固定タブは番目の数に入れない。
 const RESTORE_GRACE_MS = 5000;
 let suppressNewTabPlacementUntil = 0;
 
@@ -177,11 +182,13 @@ async function getSettings() {
   const stored = await chrome.storage.sync.get({
     dwellSeconds: DEFAULT_DWELL_SECONDS,
     enabled: DEFAULT_ENABLED,
+    leftIndex: DEFAULT_LEFT_INDEX,
     maxTabs: DEFAULT_MAX_TABS,
   });
   return {
     dwellSeconds: normalizeDwellSeconds(stored.dwellSeconds),
     enabled: normalizeEnabled(stored.enabled),
+    leftIndex: normalizeLeftIndex(stored.leftIndex),
     maxTabs: normalizeMaxTabs(stored.maxTabs),
   };
 }
@@ -383,9 +390,11 @@ async function moveTabToLeftEdge(tabId, windowId) {
   try {
     const tab = await chrome.tabs.get(tabId);
     if (tab.pinned || tab.windowId !== windowId) return "done";
-    const pinned = await chrome.tabs.query({ windowId, pinned: true });
-    if (tab.index === pinned.length) return "done";
-    await chrome.tabs.move(tabId, { index: pinned.length });
+    const [settings, tabs] = await Promise.all([getSettings(), chrome.tabs.query({ windowId })]);
+    const pinnedCount = tabs.filter((item) => item.pinned).length;
+    const index = Math.min(tabs.length - 1, pinnedCount + settings.leftIndex - 1);
+    if (tab.index <= index) return "done";
+    await chrome.tabs.move(tabId, { index });
     return "done";
   } catch (error) {
     const message = String(error && error.message ? error.message : error);

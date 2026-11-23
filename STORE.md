@@ -27,19 +27,19 @@ Moves the active tab to the left. You can also avoid reopening the same URL and 
 
 Tabs Stay Left は、今見ているタブをウィンドウの左へまとめる Chrome 拡張機能です。
 
-オンのあいだは、新しく開いたタブが最初から左端（固定タブのすぐ右）に出ます。設定した秒数見続けたタブも、同じ位置へ移ります。秒数を 0 にすると、切り替えた瞬間に移ります。
+オンのあいだは、新しく開いたタブが左から指定した位置に出ます。設定した秒数見続けたタブも、同じ位置へ移ります。すでにその位置か、それより左にいるタブは動かしません。秒数を 0 にすると、切り替えた瞬間に移ります。位置は固定タブを除いて数えます。1番目は固定タブのすぐ右、2番目はその右のタブを1つ残してさらに右です。
 
 アドレスバーやブックマークで開いた URL が既にタブにあれば、新しいタブを作らずそのタブへ移ります。この動作は設定からオフにできます。
 
 ウィンドウ内のタブが最大件数を超えると、新しく開いたタブは残し、一番右のタブを閉じます。固定タブは閉じません。初期値は 20 件です。
 
-ツールバーのアイコンをクリックすると、オンとオフが切り替わります。オフのときはアイコンがグレーになり、タブの移動も、同じ URL のタブを開く動作も止まります。待機時間と最大タブ数は、拡張機能のオプションから変更します。初期状態はオン、待機時間 3 秒、最大タブ数 20 件です。
+ツールバーのアイコンをクリックすると、オンとオフが切り替わります。オフのときはアイコンがグレーになり、タブの移動も、同じ URL のタブを開く動作も止まります。待機時間、移動位置、最大タブ数は、拡張機能のオプションから変更します。初期状態はオン、待機時間 3 秒、左から 1 番目、最大タブ数 20 件です。
 
 設定はお使いの Chrome に保存されます。閲覧したページの URL を開発者が受け取ることはありません。
 
 Tabs Stay Left is a Chrome extension that keeps the tab you are viewing on the left side of the window.
 
-While it is on, a newly opened tab appears at the far left, immediately to the right of pinned tabs. A tab you keep viewing for the number of seconds you set also moves there. Set the time to 0 to move it as soon as you switch to it.
+While it is on, a newly opened tab appears at the position you set, counting only unpinned tabs. Position 1 is immediately to the right of pinned tabs. Position 2 leaves the first unpinned tab in place and moves to its right. A tab you keep viewing for the number of seconds you set also moves there, unless it is already at that position or further left. Set the time to 0 to move it as soon as you switch to it.
 
 If you open a URL from the address bar or a bookmark and that URL is already open in a tab, the extension switches to that tab instead of creating a new one. You can turn this off in the settings.
 
@@ -57,7 +57,7 @@ Settings are saved in your Chrome. The developer does not receive the URLs of pa
 
 tabs: タブを左へ移し、既存のタブを前面にし、上限を超えた右端のタブを閉じるため。
 
-storage: オン／オフ、待機秒数、最大タブ数、同じ URL を開くかどうかの設定と、左へ移す予定の一時データを保存するため。
+storage: オン／オフ、待機秒数、左から数えた移動位置、最大タブ数、同じ URL を開くかどうかの設定と、左へ移す予定の一時データを保存するため。
 
 alarms: タブを見続けた秒数を数えてから左へ移すため。
 

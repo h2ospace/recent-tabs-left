@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tabs Stay Left",
-  "version": "0.1",
+  "version": "0.2",
   "default_locale": "ja",
   "description": "__MSG_extensionDescription__",
   "permissions": ["tabs", "storage", "alarms", "webNavigation"],

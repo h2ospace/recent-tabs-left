@@ -9,124 +9,114 @@
   <body>
     <main>
       <header class="header">
-        <div class="intro">
-          <h1>Tabs Stay Left</h1>
-          <p class="lead">タブの移動ルールを設定します。変更は自動で保存されます。</p>
-        </div>
-        <div class="enable">
-          <div class="enable-copy">
-            <span id="enabled-heading" class="enable-kicker">拡張機能</span>
-            <span id="enabled-state" class="enable-state">有効</span>
-          </div>
-          <label class="switch switch-lg">
-            <input
-              id="enabled"
-              type="checkbox"
-              role="switch"
-              checked
-              aria-labelledby="enabled-heading enabled-state"
-            />
-            <span class="track" aria-hidden="true"></span>
-          </label>
-        </div>
+        <h1>Tabs Stay Left</h1>
+        <button type="button" id="enabled" class="enable" aria-pressed="true">無効にする</button>
       </header>
-      <hr class="divider" />
-      <form id="settings" class="settings">
-        <h2>動作設定</h2>
-        <div id="dwell" class="card">
-          <div class="card-copy">
-            <h3>左端へ自動で移動</h3>
-            <p>新しいタブは左端で開きます。同じタブを一定時間開き続けると、固定タブのすぐ右へ移動します。</p>
-          </div>
-          <div class="dwell">
-            <label for="dwell-seconds">待機時間</label>
-            <div class="seconds-field">
-              <input
-                id="dwell-seconds"
-                type="number"
-                min="0"
-                max="300"
-                step="1"
-                inputmode="numeric"
-                autocomplete="off"
-                required
-                value="3"
-              />
-              <span class="unit">秒</span>
+      <section class="settings" aria-labelledby="behavior-heading">
+        <h2 id="behavior-heading">動作</h2>
+        <form id="settings">
+          <div id="behavior" class="card">
+            <div class="row">
+              <p class="row-title">左端へ自動で移動</p>
+              <div class="rule">
+                <div class="field">
+                  <input
+                    id="dwell-seconds"
+                    type="number"
+                    min="0"
+                    max="300"
+                    step="1"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    required
+                    value="3"
+                    aria-label="移動するまでの秒数"
+                  />
+                  <span class="spinner">
+                    <button type="button" id="dwell-up" aria-label="移動するまでの秒数を1増やす">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
+                    </button>
+                    <button type="button" id="dwell-down" aria-label="移動するまでの秒数を1減らす">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                  </span>
+                </div>
+                <span>秒後に、左から</span>
+                <div class="field">
+                  <input
+                    id="left-index"
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="1"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    required
+                    value="1"
+                    aria-label="左から数えた移動位置"
+                  />
+                  <span class="spinner">
+                    <button type="button" id="left-up" aria-label="左からの位置を1増やす">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
+                    </button>
+                    <button type="button" id="left-down" aria-label="左からの位置を1減らす">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                  </span>
+                </div>
+                <span>番目に移動</span>
+              </div>
             </div>
-            <div class="stepper">
-              <button type="button" id="dwell-up" aria-label="待機時間を1秒増やす">
-                <svg viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M3.5 10.5 8 6l4.5 4.5" />
-                </svg>
-              </button>
-              <button type="button" id="dwell-down" aria-label="待機時間を1秒減らす">
-                <svg viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M3.5 5.5 8 10l4.5-4.5" />
-                </svg>
-              </button>
+            <div class="row">
+              <div class="copy">
+                <p class="row-title">最大タブ数</p>
+                <p class="hint">超えると右端のタブを閉じます。固定タブは残します。</p>
+              </div>
+              <div class="rule">
+                <div class="field">
+                  <input
+                    id="max-tabs-count"
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="1"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    required
+                    value="20"
+                    aria-label="最大タブ数"
+                  />
+                  <span class="spinner">
+                    <button type="button" id="max-up" aria-label="最大タブ数を1増やす">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
+                    </button>
+                    <button type="button" id="max-down" aria-label="最大タブ数を1減らす">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                  </span>
+                </div>
+                <span>件</span>
+              </div>
+            </div>
+            <div id="focus" class="row">
+              <div class="copy">
+                <p id="focus-heading" class="row-title">同じURLのタブへ移動</p>
+                <p id="focus-hint" class="hint">既に開いているURLの場合は、新しいタブを作らずそのタブを表示します</p>
+              </div>
+              <label class="switch">
+                <input
+                  id="focus-existing"
+                  type="checkbox"
+                  role="switch"
+                  checked
+                  aria-labelledby="focus-heading"
+                />
+                <span class="track" aria-hidden="true"></span>
+              </label>
             </div>
           </div>
-        </div>
-        <div id="max-tabs" class="card">
-          <div class="card-copy">
-            <h3>最大タブ数</h3>
-            <p>この件数を超えて開くと、同じウィンドウで一番右のタブを閉じます。</p>
-          </div>
-          <div class="dwell">
-            <label for="max-tabs-count">件数</label>
-            <div class="seconds-field">
-              <input
-                id="max-tabs-count"
-                type="number"
-                min="1"
-                max="100"
-                step="1"
-                inputmode="numeric"
-                autocomplete="off"
-                required
-                value="20"
-              />
-              <span class="unit">件</span>
-            </div>
-            <div class="stepper">
-              <button type="button" id="max-tabs-up" aria-label="最大タブ数を1件増やす">
-                <svg viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M3.5 10.5 8 6l4.5 4.5" />
-                </svg>
-              </button>
-              <button type="button" id="max-tabs-down" aria-label="最大タブ数を1件減らす">
-                <svg viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M3.5 5.5 8 10l4.5-4.5" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div id="focus" class="card">
-          <div class="card-copy">
-            <h3 id="focus-heading" class="card-title">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M9 17H7A5 5 0 0 1 7 7h2" />
-                <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
-                <path d="M8 12h8" />
-              </svg>
-              同じURLのタブへ移動
-            </h3>
-            <p id="focus-hint">既に開いているURLの場合は、新しいタブを作らずそのタブを表示します。</p>
-          </div>
-          <label class="switch switch-sm">
-            <input
-              id="focus-existing"
-              type="checkbox"
-              role="switch"
-              checked
-              aria-labelledby="focus-heading"
-            />
-            <span class="track" aria-hidden="true"></span>
-          </label>
-        </div>
-      </form>
+        </form>
+      </section>
       <p id="status" role="status"></p>
     </main>
     <script type="module" src="options.js"></script>
